@@ -27,23 +27,29 @@ object sparkdemo {
       .csv("/home/vagrant/Downloads/data-master/retail_db/orders")
     logger.info("Reading ordrers file done")
 
-    val customerschema = StructType(Array(StructField("customer_id", IntegerType, true),
-      StructField("customer_fname", StringType, true),
-      StructField("customer_lname", StringType, true))
-    )
-
-    val customerDf = spark.read
-      .option("sep",",")
-      .schema(customerschema)
-      .csv("/home/vagrant/Downloads/data-master/retail_db/customers")
-    logger.info("Reading customers file done")
-
-    val distinctCustOrder = orderDf.select("order_customer_id")
-      .distinct()
-      .withColumnRenamed("order_customer_id","customer_id")
-
-    val invalidCustDF = customerDf.join(distinctCustOrder,Seq("customer_id"),"leftanti")
-    invalidCustDF.show()
+//    val customerschema = StructType(Array(StructField("customer_id", IntegerType, true),
+//      StructField("customer_fname", StringType, true),
+//      StructField("customer_lname", StringType, true))
+//    )
+//
+//    val customerDf = spark.read
+//      .option("sep",",")
+//      .schema(customerschema)
+//      .csv("/home/vagrant/Downloads/data-master/retail_db/customers")
+//    logger.info("Reading customers file done")
+//
+//    val distinctCustOrder = orderDf.select("order_customer_id")
+//      .distinct()
+//      .withColumnRenamed("order_customer_id","customer_id")
+//
+//    val invalidCustDF = customerDf.join(distinctCustOrder,Seq("customer_id"),"leftanti")
+//    invalidCustDF.show()
+    orderDf
+      .where(col("order_status").isin("COMPLETED", "CLOSED"))
+      .select("order_id","order_date")
+      .groupBy(col("order_date"))
+      .count()
+      .collect()
     logger.info("Program end")
 
   }
